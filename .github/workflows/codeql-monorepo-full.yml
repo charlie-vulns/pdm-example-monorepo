@@ -1,0 +1,30 @@
+name: CodeQL monorepo - full
+
+on:
+  workflow_dispatch:
+
+jobs:
+  whole-repo:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      projects: ${{ steps.whole-repo.outputs.projects }}
+    steps:
+      - id: whole-repo
+        uses: advanced-security/monorepo-code-scanning-action/whole-repo@d237159fac522523309f37112abac0738068d13b
+        with:
+          projects-json: .github/codeql-projects.json
+
+  scan:
+    needs: whole-repo
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    strategy:
+      matrix:
+        project: ${{ fromJson(needs.whole-repo.outputs.projects).projects }}
+    steps:
+      - uses: advanced-security/monorepo-code-scanning-action/scan@d237159fac522523309f37112abac0738068d13b
