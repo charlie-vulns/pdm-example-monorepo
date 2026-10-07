@@ -1,0 +1,47 @@
+name: CodeQL monorepo - PR
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, closed]
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      contents: read
+    outputs:
+      projects: ${{ steps.changes.outputs.projects }}
+      scan-required: ${{ steps.changes.outputs.scan-required }}
+    steps:
+      - id: changes
+        uses: advanced-security/monorepo-code-scanning-action/changes@d237159fac522523309f37112abac0738068d13b
+        with:
+          projects-json: .github/codeql-projects.json
+
+  scan:
+    if: needs.changes.outputs.scan-required == 'true'
+    needs: changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    strategy:
+      matrix:
+        project: ${{ fromJson(needs.changes.outputs.projects).projects }}
+    steps:
+      - uses: advanced-security/monorepo-code-scanning-action/scan@d237159fac522523309f37112abac0738068d13b
+
+  republish:
+    needs: changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    steps:
+      - uses: advanced-security/monorepo-code-scanning-action/republish-sarif@d237159fac522523309f37112abac0738068d13b
+        with:
+          projects: ${{ needs.changes.outputs.projects }}

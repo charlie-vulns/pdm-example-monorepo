@@ -1,0 +1,17 @@
+{
+  "python": {
+    "build-mode": "none",
+    "queries": ["security-extended"],
+    "projects": {
+      "core": {
+        "paths": ["packages/pkg-core"]
+      },
+      "first": {
+        "paths": ["packages/pkg-first", "packages/pkg-core"]
+      },
+      "second": {
+        "paths": ["packages/pkg-second", "packages/pkg-core"]
+      }
+    }
+  }
+}
